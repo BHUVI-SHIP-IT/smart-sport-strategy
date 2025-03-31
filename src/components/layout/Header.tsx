@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Settings, User, Menu } from 'lucide-react';
+import { Bell, Settings, User, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAI } from '@/context/AIContext';
+import { useAuth } from '@/context/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import { Sidebar } from './Sidebar';
 
 export function Header() {
   const { isConfigured } = useAI();
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,38 +59,56 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>No new notifications</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Link to="/settings">
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Settings</span>
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notifications</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Link to="/settings">
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-5 w-5" />
+                  <span className="sr-only">Settings</span>
+                </Button>
+              </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
-                <span className="sr-only">User</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Preferences</DropdownMenuItem>
-              <DropdownMenuItem>Sign out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                    <span className="sr-only">User</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <span>{user?.email}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>Preferences</DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <div className="flex gap-2">
+              <Link to="/login">
+                <Button variant="outline" size="sm">Sign in</Button>
+              </Link>
+              <Link to="/signup">
+                <Button size="sm">Sign up</Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>
