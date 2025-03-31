@@ -1,7 +1,7 @@
 
 import { toast } from "@/components/ui/use-toast";
 
-interface AnalyzePerformanceParams {
+export interface AnalyzePerformanceParams {
   athleteData: {
     name: string;
     sport: string;
@@ -11,16 +11,21 @@ interface AnalyzePerformanceParams {
   analysisType: 'performance trends' | 'improvement areas' | 'detailed breakdown';
 }
 
-interface PerformanceInsights {
+export interface PerformanceInsights {
   analysis: string;
   recommendations: string[];
 }
 
-class OpenRouterService {
-  config: {
-    apiKey: string | null;
-    baseUrl: string;
-  };
+export interface OpenRouterConfig {
+  apiKey: string | null;
+  baseUrl: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export class OpenRouterService {
+  config: OpenRouterConfig;
 
   constructor() {
     this.config = {

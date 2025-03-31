@@ -35,10 +35,7 @@ export function AIProvider({ children }: { children: React.ReactNode }) {
   const setApiKey = (key: string) => {
     setApiKeyState(key);
     localStorage.setItem('openrouter_api_key', key);
-    openRouterService.config = {
-      ...openRouterService.config, 
-      apiKey: key
-    };
+    openRouterService.setApiKey(key);
     setIsConfigured(!!key);
   };
 
@@ -53,7 +50,7 @@ export function AIProvider({ children }: { children: React.ReactNode }) {
   // Update OpenRouter service configuration when settings change
   useEffect(() => {
     openRouterService.config = {
-      apiKey,
+      ...openRouterService.config,
       model,
       temperature,
       maxTokens
