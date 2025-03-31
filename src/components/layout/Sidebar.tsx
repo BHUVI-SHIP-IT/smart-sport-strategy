@@ -10,7 +10,8 @@ import {
   Briefcase, 
   Settings, 
   Home,
-  Trophy
+  Trophy,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -67,6 +68,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: 'Achievements',
       icon: <Trophy className="mr-2 h-4 w-4" />,
       href: '/achievements'
+    },
+    {
+      title: 'AI Chat',
+      icon: <MessageSquare className="mr-2 h-4 w-4" />,
+      href: '/chat'
     },
     {
       title: 'Settings',

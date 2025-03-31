@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 export interface AnalyzePerformanceParams {
@@ -14,6 +13,16 @@ export interface AnalyzePerformanceParams {
 export interface PerformanceInsights {
   analysis: string;
   recommendations: string[];
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface ChatResponse {
+  message: ChatMessage;
+  conversationId?: string;
 }
 
 export interface OpenRouterConfig {
@@ -76,6 +85,50 @@ export class OpenRouterService {
       toast({
         title: 'Analysis Failed',
         description: 'Unable to generate AI insights. Please try again later.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  }
+
+  async sendChatMessage(messages: ChatMessage[]): Promise<ChatResponse> {
+    if (!this.config.apiKey) {
+      throw new Error('API key not configured');
+    }
+    
+    try {
+      const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'SportStrategy AI Chat'
+        },
+        body: JSON.stringify({
+          model: this.config.model || 'anthropic/claude-3-haiku',
+          messages,
+          temperature: this.config.temperature || 0.7,
+          max_tokens: this.config.maxTokens || 500
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error communicating with OpenRouter API');
+      }
+
+      const data = await response.json();
+      
+      return {
+        message: data.choices[0].message,
+        conversationId: data.id
+      };
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+      toast({
+        title: 'Chat Error',
+        description: error instanceof Error ? error.message : 'Failed to send message',
         variant: 'destructive',
       });
       throw error;
