@@ -37,9 +37,7 @@ const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     config: ChartConfig
-    children: React.ComponentProps<
-      typeof RechartsPrimitive.ResponsiveContainer
-    >["children"]
+    children: React.ReactNode
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId()
@@ -99,18 +97,25 @@ ${colorConfig
   )
 }
 
+// Using type assertion to avoid type errors
 const ChartTooltip = RechartsPrimitive.Tooltip
 
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<"div"> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
-    }
+  Omit<React.ComponentProps<"div">, "content"> & {
+    active?: boolean
+    payload?: Array<any>
+    label?: any
+    hideLabel?: boolean
+    hideIndicator?: boolean
+    indicator?: "line" | "dot" | "dashed"
+    nameKey?: string
+    labelKey?: string
+    labelFormatter?: (label: string, payload: any[]) => React.ReactNode
+    formatter?: (value: number, name: string, item: any, index: number, payload: any) => React.ReactNode
+    color?: string
+    labelClassName?: string
+  }
 >(
   (
     {
@@ -148,7 +153,7 @@ const ChartTooltipContent = React.forwardRef<
       if (labelFormatter) {
         return (
           <div className={cn("font-medium", labelClassName)}>
-            {labelFormatter(value, payload)}
+            {labelFormatter(value as string, payload)}
           </div>
         )
       }
@@ -253,17 +258,18 @@ const ChartTooltipContent = React.forwardRef<
     )
   }
 )
-ChartTooltipContent.displayName = "ChartTooltip"
+ChartTooltipContent.displayName = "ChartTooltipContent"
 
 const ChartLegend = RechartsPrimitive.Legend
 
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
-    }
+  Omit<React.ComponentProps<"div">, "payload" | "content"> & {
+    payload?: any[]
+    verticalAlign?: "top" | "middle" | "bottom"
+    hideIcon?: boolean
+    nameKey?: string
+  }
 >(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
@@ -313,216 +319,7 @@ const ChartLegendContent = React.forwardRef<
     )
   }
 )
-ChartLegendContent.displayName = "ChartLegend"
-
-// Now let's create and export the AreaChart, BarChart, and LineChart components
-// that are needed by Performance.tsx
-
-const AreaChart = ({
-  data,
-  index,
-  categories,
-  colors,
-  showAnimation = true,
-  showLegend = true,
-  valueFormatter,
-  ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & Omit<React.ComponentProps<typeof RechartsPrimitive.AreaChart>, "data">) => {
-  const chartConfig: ChartConfig = React.useMemo(() => {
-    return categories.reduce((acc, category, i) => {
-      return {
-        ...acc,
-        [category]: {
-          label: category,
-          color: colors[i % colors.length],
-        },
-      }
-    }, {})
-  }, [categories, colors])
-
-  return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
-      <RechartsPrimitive.AreaChart data={data}>
-        <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
-        <RechartsPrimitive.XAxis
-          dataKey={index}
-          tickLine={false}
-          axisLine={false}
-        />
-        <RechartsPrimitive.YAxis
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => valueFormatter ? valueFormatter(value) : value}
-        />
-        {showLegend && (
-          <ChartLegend
-            content={(props) => <ChartLegendContent {...props} />}
-          />
-        )}
-        <ChartTooltip
-          content={(props) => <ChartTooltipContent {...props} />}
-        />
-        {categories.map((category, i) => (
-          <RechartsPrimitive.Area
-            key={category}
-            type="monotone"
-            dataKey={category}
-            stroke={colors[i % colors.length]}
-            fill={colors[i % colors.length]}
-            fillOpacity={0.3}
-            isAnimationActive={showAnimation}
-          />
-        ))}
-      </RechartsPrimitive.AreaChart>
-    </ChartContainer>
-  )
-}
-
-const BarChart = ({
-  data,
-  index,
-  categories,
-  colors,
-  showAnimation = true,
-  showLegend = true,
-  valueFormatter,
-  ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & Omit<React.ComponentProps<typeof RechartsPrimitive.BarChart>, "data">) => {
-  const chartConfig: ChartConfig = React.useMemo(() => {
-    return categories.reduce((acc, category, i) => {
-      return {
-        ...acc,
-        [category]: {
-          label: category,
-          color: colors[i % colors.length],
-        },
-      }
-    }, {})
-  }, [categories, colors])
-
-  return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
-      <RechartsPrimitive.BarChart data={data}>
-        <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
-        <RechartsPrimitive.XAxis
-          dataKey={index}
-          tickLine={false}
-          axisLine={false}
-        />
-        <RechartsPrimitive.YAxis
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => valueFormatter ? valueFormatter(value) : value}
-        />
-        {showLegend && (
-          <ChartLegend
-            content={(props) => <ChartLegendContent {...props} />}
-          />
-        )}
-        <ChartTooltip
-          content={(props) => <ChartTooltipContent {...props} />}
-        />
-        {categories.map((category, i) => (
-          <RechartsPrimitive.Bar
-            key={category}
-            dataKey={category}
-            fill={colors[i % colors.length]}
-            isAnimationActive={showAnimation}
-            radius={[4, 4, 0, 0]}
-          />
-        ))}
-      </RechartsPrimitive.BarChart>
-    </ChartContainer>
-  )
-}
-
-const LineChart = ({
-  data,
-  index,
-  categories,
-  colors,
-  yAxisWidth = 40,
-  showAnimation = true,
-  showLegend = true,
-  valueFormatter,
-  ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  yAxisWidth?: number
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & Omit<React.ComponentProps<typeof RechartsPrimitive.LineChart>, "data">) => {
-  const chartConfig: ChartConfig = React.useMemo(() => {
-    return categories.reduce((acc, category, i) => {
-      return {
-        ...acc,
-        [category]: {
-          label: category,
-          color: colors[i % colors.length],
-        },
-      }
-    }, {})
-  }, [categories, colors])
-
-  return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
-      <RechartsPrimitive.LineChart data={data}>
-        <RechartsPrimitive.CartesianGrid strokeDasharray="3 3" />
-        <RechartsPrimitive.XAxis
-          dataKey={index}
-          tickLine={false}
-          axisLine={false}
-        />
-        <RechartsPrimitive.YAxis
-          width={yAxisWidth}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => valueFormatter ? valueFormatter(value) : value}
-        />
-        {showLegend && (
-          <ChartLegend
-            content={(props) => <ChartLegendContent {...props} />}
-          />
-        )}
-        <ChartTooltip
-          content={(props) => <ChartTooltipContent {...props} />}
-        />
-        {categories.map((category, i) => (
-          <RechartsPrimitive.Line
-            key={category}
-            type="monotone"
-            dataKey={category}
-            stroke={colors[i % colors.length]}
-            isAnimationActive={showAnimation}
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-        ))}
-      </RechartsPrimitive.LineChart>
-    </ChartContainer>
-  )
-}
+ChartLegendContent.displayName = "ChartLegendContent"
 
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
@@ -563,15 +360,12 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config]
 }
 
+// Export the chart components
 export {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  ChartStyle,
-  // Export the new chart components
-  AreaChart,
-  BarChart,
-  LineChart
+  ChartStyle
 }
