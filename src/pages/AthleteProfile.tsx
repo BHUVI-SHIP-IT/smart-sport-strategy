@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
@@ -13,37 +12,47 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Heart, Activity, LineChart, CalendarClock, Trophy, PersonStanding, AlertCircle, User, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { databaseService, Athlete } from '@/services/databaseService';
+import { databaseService } from '@/services/databaseService';
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeAthlete, ExtendedAthlete } from '@/types/athlete';
 
 export default function AthleteProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Fetch athlete data from Supabase
-  const { data: athlete, isLoading, error } = useQuery({
+  // Fetch athlete data 
+  const { data: athleteData, isLoading, error } = useQuery({
     queryKey: ['athlete', id],
     queryFn: async () => {
       if (!id) throw new Error('Athlete ID is required');
       
-      // Try to fetch from Supabase first
-      const { data: supabaseAthlete, error } = await supabase
-        .from('athletes')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching from Supabase:', error);
-        // Fallback to mock data
-        return databaseService.getAthleteById(id);
+      try {
+        // Try to fetch from Supabase first
+        const { data: supabaseAthlete, error } = await supabase
+          .from('athletes')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching from Supabase:', error);
+          // Fallback to mock data
+          const mockAthlete = await databaseService.getAthleteById(id);
+          return mockAthlete;
+        }
+        
+        return supabaseAthlete;
+      } catch (error) {
+        console.error('Error fetching athlete:', error);
+        return null;
       }
-      
-      return supabaseAthlete;
     }
   });
+
+  // Normalize the athlete data to ensure it has all required properties
+  const athlete = athleteData ? normalizeAthlete(athleteData) : null;
 
   // Performance metrics data for charts
   const performanceData = [
@@ -94,6 +103,7 @@ export default function AthleteProfile() {
     );
   }
 
+  // Rest of the component remains the same
   return (
     <Layout>
       <div className="flex flex-col gap-6">
@@ -101,7 +111,7 @@ export default function AthleteProfile() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={athlete.profileImage || "https://via.placeholder.com/150"} alt={athlete.name} />
+              <AvatarImage src={athlete.profileImage || athlete.image_url || "https://via.placeholder.com/150"} alt={athlete.name} />
               <AvatarFallback>{athlete.name ? athlete.name.split(' ').map(n => n[0]).join('') : 'A'}</AvatarFallback>
             </Avatar>
             <div>
@@ -125,7 +135,7 @@ export default function AthleteProfile() {
           </div>
           <div className="flex gap-2 self-start md:self-auto">
             <Badge variant={athlete.status === 'active' ? "outline" : athlete.status === 'injured' ? "destructive" : "secondary"} className="capitalize">
-              {athlete.status}
+              {athlete.status || 'active'}
             </Badge>
             <Button>Edit Profile</Button>
           </div>
@@ -196,7 +206,7 @@ export default function AthleteProfile() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Age</span>
-                      <span>{athlete.age}</span>
+                      <span>{athlete.age || 'N/A'}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
@@ -211,7 +221,7 @@ export default function AthleteProfile() {
                     <Separator />
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Email</span>
-                      <span>{athlete.contactInfo?.email}</span>
+                      <span>{athlete.contactInfo?.email || athlete.bio || 'N/A'}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
@@ -355,7 +365,7 @@ export default function AthleteProfile() {
                   </>
                 ) : athlete.sport === 'Tennis' ? (
                   <>
-                    <StatCard title="Win Rate" value={`${(athlete.performanceStats?.seasonAverages?.winRate || 0.85) * 100}%`} />
+                    <StatCard title="Win Rate" value={`${((athlete.performanceStats?.seasonAverages?.winRate || 0.85) * 100).toFixed(0)}%`} />
                     <StatCard title="Aces Per Match" value={athlete.performanceStats?.seasonAverages?.acesPerMatch || '8.2'} />
                     <StatCard title="1st Serve %" value={`${athlete.performanceStats?.seasonAverages?.firstServePercentage || '65.8'}%`} />
                     <StatCard title="Points Won" value={`${athlete.performanceStats?.seasonAverages?.returnPointsWon || '45.7'}%`} />
@@ -504,7 +514,7 @@ export default function AthleteProfile() {
                       </div>
                       <div>
                         <p className="font-medium">Gatorade</p>
-                        <p className="text-xs text-muted-foreground">Hydration products - $150K/year</p>
+                        <p className="text-xs text-muted-foreground">Sports drink sponsorship - $150K/year</p>
                       </div>
                     </div>
                     <Button size="sm" variant="outline">View Details</Button>
@@ -513,11 +523,11 @@ export default function AthleteProfile() {
                   <div className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="font-semibold text-green-600">A</span>
+                        <span className="font-semibold text-green-600">UA</span>
                       </div>
                       <div>
-                        <p className="font-medium">Adidas</p>
-                        <p className="text-xs text-muted-foreground">Equipment and apparel - $200K/year</p>
+                        <p className="font-medium">Under Armour</p>
+                        <p className="text-xs text-muted-foreground">Equipment sponsorship - $180K/year</p>
                       </div>
                     </div>
                     <Button size="sm" variant="outline">View Details</Button>
@@ -525,10 +535,10 @@ export default function AthleteProfile() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full">Find More Sponsors</Button>
+                <Button className="w-full">Apply for Sponsorships</Button>
               </CardFooter>
             </Card>
-
+            
             <Card>
               <CardHeader>
                 <CardTitle>Current Sponsorships</CardTitle>
@@ -540,20 +550,20 @@ export default function AthleteProfile() {
                     {athlete.career.sponsorships.map((sponsorship, idx) => (
                       <div key={idx} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                            <span className="font-semibold text-slate-600">{sponsorship.company.charAt(0)}</span>
-                          </div>
+                          <Avatar>
+                            <AvatarFallback>{sponsorship.company?.charAt(0) || 'S'}</AvatarFallback>
+                          </Avatar>
                           <div>
                             <p className="font-medium">{sponsorship.company}</p>
                             <p className="text-xs text-muted-foreground">
-                              Started {new Date(sponsorship.startDate).toLocaleDateString()}
-                              {sponsorship.endDate ? ` • Ends ${new Date(sponsorship.endDate).toLocaleDateString()}` : ''}
+                              {sponsorship.startDate ? `Since ${new Date(sponsorship.startDate).getFullYear()}` : 'Active contract'}
                             </p>
                           </div>
                         </div>
-                        <Badge variant={sponsorship.status === 'active' ? "outline" : "secondary"} className="capitalize">
-                          {sponsorship.status}
-                        </Badge>
+                        <div className="text-right">
+                          <p className="font-medium">${(sponsorship.value / 1000).toFixed(0)}K</p>
+                          <p className="text-xs text-muted-foreground">{sponsorship.status || 'active'}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -563,6 +573,9 @@ export default function AthleteProfile() {
                   </div>
                 )}
               </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">Manage Sponsorships</Button>
+              </CardFooter>
             </Card>
           </TabsContent>
           
@@ -570,74 +583,28 @@ export default function AthleteProfile() {
           <TabsContent value="history" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Career Timeline</CardTitle>
-                <CardDescription>Major milestones and achievements</CardDescription>
+                <CardTitle>Career Achievements</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="relative border-l border-muted pl-6 ml-3 space-y-8">
-                  {athlete.career?.achievements?.map((achievement, idx) => (
-                    <div key={idx} className="relative">
-                      <div className="absolute -left-9 mt-1.5 h-4 w-4 rounded-full border border-muted bg-background"></div>
-                      <div className="mb-1 text-lg font-semibold">{achievement.title}</div>
-                      <div className="text-sm text-muted-foreground mb-2">{new Date(achievement.date).toLocaleDateString()}</div>
-                      <div className="text-sm">{achievement.description}</div>
-                    </div>
-                  ))}
-                  {(!athlete.career?.achievements || athlete.career.achievements.length === 0) && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No achievements recorded
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Contract History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {athlete.career?.currentContract && (
-                    <div className="border border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-900 p-4 rounded-lg mb-4">
-                      <div className="flex items-center justify-between">
+                {athlete.career?.achievements && athlete.career.achievements.length > 0 ? (
+                  <div className="space-y-4">
+                    {athlete.career.achievements.map((achievement, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium">{athlete.career.currentContract.team}</p>
+                          <p className="font-medium">{achievement.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(athlete.career.currentContract.startDate).toLocaleDateString()} - 
-                            {new Date(athlete.career.currentContract.endDate).toLocaleDateString()}
+                            {new Date(achievement.date).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium">${(athlete.career.currentContract.value / 1000000).toFixed(2)}M</p>
-                          <Badge>Current</Badge>
-                        </div>
+                        <Badge variant="outline">Achievement</Badge>
                       </div>
-                    </div>
-                  )}
-                  
-                  {athlete.career?.previousContracts?.map((contract, idx) => (
-                    <div key={idx} className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                      <div>
-                        <p className="font-medium">{contract.team}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(contract.startDate).toLocaleDateString()} - 
-                          {new Date(contract.endDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">${(contract.value / 1000000).toFixed(2)}M</p>
-                        <Badge variant="outline" className="capitalize">{contract.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {(!athlete.career?.currentContract && (!athlete.career?.previousContracts || athlete.career.previousContracts.length === 0)) && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No contract history available
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-4">
+                    No achievements recorded
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -645,94 +612,81 @@ export default function AthleteProfile() {
           {/* Emergency Tab */}
           <TabsContent value="emergency" className="space-y-6">
             <Card>
-              <CardHeader className="bg-destructive/10">
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-destructive" />
-                  Emergency Contact Information
-                </CardTitle>
+              <CardHeader>
+                <CardTitle>Emergency Contacts</CardTitle>
+                <CardDescription>People to contact in case of emergency</CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Primary Contact</p>
-                      <p className="font-medium">John Doe (Father)</p>
-                      <p>+1 (555) 123-4567</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>JD</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">John Doe</p>
+                        <p className="text-xs text-muted-foreground">Family - Father</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Secondary Contact</p>
-                      <p className="font-medium">Jane Doe (Mother)</p>
-                      <p>+1 (555) 234-5678</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">Call</Button>
+                      <Button size="sm" variant="outline">Message</Button>
                     </div>
                   </div>
                   
-                  <div className="border-t pt-4">
-                    <p className="text-sm text-muted-foreground mb-1">Medical Information</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>MS</AvatarFallback>
+                      </Avatar>
                       <div>
-                        <p className="text-sm font-medium">Blood Type</p>
-                        <p>O Positive</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Allergies</p>
-                        <p>Penicillin, Peanuts</p>
+                        <p className="font-medium">Mary Smith</p>
+                        <p className="text-xs text-muted-foreground">Agent</p>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="border-t pt-4">
-                    <p className="text-sm text-muted-foreground mb-1">Medical Provider</p>
-                    <p className="font-medium">Dr. Robert Johnson</p>
-                    <p>Sports Medicine Specialist</p>
-                    <p>+1 (555) 987-6543</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">Call</Button>
+                      <Button size="sm" variant="outline">Message</Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex flex-col gap-2">
-                <Button className="w-full" variant="destructive">
-                  <AlertCircle className="mr-2 h-4 w-4" />
-                  Emergency Call
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Find Nearby Hospitals
-                </Button>
+              <CardFooter>
+                <Button variant="outline" className="w-full">Add Emergency Contact</Button>
               </CardFooter>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>Nearby Medical Facilities</CardTitle>
+                <CardTitle>Medical Information</CardTitle>
+                <CardDescription>Important health information</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                    <div>
-                      <p className="font-medium">City General Hospital</p>
-                      <p className="text-xs text-muted-foreground">2.3 miles away • Emergency, Sports Medicine</p>
-                      <p className="text-xs">+1 (555) 111-2222</p>
-                    </div>
-                    <Button size="sm">Directions</Button>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Blood Type</span>
+                    <span>O+</span>
                   </div>
-                  
-                  <div className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                    <div>
-                      <p className="font-medium">Sports Medicine Clinic</p>
-                      <p className="text-xs text-muted-foreground">3.7 miles away • Sports Medicine</p>
-                      <p className="text-xs">+1 (555) 222-3333</p>
-                    </div>
-                    <Button size="sm">Directions</Button>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Allergies</span>
+                    <span>None</span>
                   </div>
-                  
-                  <div className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                    <div>
-                      <p className="font-medium">Urgent Care Center</p>
-                      <p className="text-xs text-muted-foreground">1.5 miles away • Urgent Care</p>
-                      <p className="text-xs">+1 (555) 333-4444</p>
-                    </div>
-                    <Button size="sm">Directions</Button>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Medical Conditions</span>
+                    <span>None</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Medications</span>
+                    <span>None</span>
                   </div>
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">Update Medical Information</Button>
+              </CardFooter>
             </Card>
           </TabsContent>
         </Tabs>

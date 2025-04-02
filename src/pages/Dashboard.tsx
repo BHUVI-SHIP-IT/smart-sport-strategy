@@ -1,286 +1,344 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Layout } from '@/components/layout/Layout';
-import { StatCard } from '@/components/dashboard/StatCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  LineChart, BarChart, Activity, ArrowDown, ArrowRight,
+  ArrowUp, Calendar, DollarSign, Medal, Target, History,
+  AlertTriangle
+} from 'lucide-react';
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart';
 import { AthletePerformanceCard } from '@/components/dashboard/AthletePerformanceCard';
 import { AISummaryCard } from '@/components/dashboard/AISummaryCard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Activity, Calendar, Users, TrendingUp, Heart, Award, AlertTriangle, InfoIcon } from 'lucide-react';
 import { databaseService } from '@/services/databaseService';
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from '@tanstack/react-query';
+import { normalizeAthlete } from '@/types/athlete';
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-
-  // Fetch athletes from Supabase or fallback to mock data
-  const { data: athletes, isLoading } = useQuery({
-    queryKey: ['dashboard-athletes'],
-    queryFn: async () => {
-      try {
-        // Attempt to fetch from Supabase
-        const { data: supabaseAthletes, error } = await supabase
-          .from('athletes')
-          .select('*')
-          .limit(4);
-
-        if (error || !supabaseAthletes?.length) {
-          // Fallback to mock data
-          return await databaseService.getAthletes();
-        }
-        
-        return supabaseAthletes;
-      } catch (err) {
-        console.error('Error fetching athletes:', err);
-        // Fallback to mock data
-        return await databaseService.getAthletes();
-      }
-    }
+  const { data: athletesData = [], isLoading } = useQuery({
+    queryKey: ['athletes'],
+    queryFn: () => databaseService.getAthletes(),
   });
 
-  // Sample data for the performance chart
-  const teamPerformanceData = [
-    { name: 'Week 1', strength: 65, speed: 70, endurance: 60 },
-    { name: 'Week 2', strength: 68, speed: 72, endurance: 62 },
-    { name: 'Week 3', strength: 72, speed: 74, endurance: 65 },
-    { name: 'Week 4', strength: 75, speed: 76, endurance: 68 },
-    { name: 'Week 5', strength: 78, speed: 78, endurance: 70 },
-    { name: 'Week 6', strength: 80, speed: 80, endurance: 73 },
+  // Normalize athlete data
+  const athletes = React.useMemo(() => {
+    return athletesData.map(athlete => normalizeAthlete(athlete));
+  }, [athletesData]);
+
+  // Filter top performing athletes
+  const topAthletes = React.useMemo(() => {
+    return [...athletes]
+      .sort((a, b) => (b.performanceStats?.overallScore || 0) - (a.performanceStats?.overallScore || 0))
+      .slice(0, 4);
+  }, [athletes]);
+
+  const performanceData = [
+    { name: 'Jan', team: 65, league: 78 },
+    { name: 'Feb', team: 68, league: 80 },
+    { name: 'Mar', team: 72, league: 82 },
+    { name: 'Apr', team: 75, league: 81 },
+    { name: 'May', team: 78, league: 83 },
+    { name: 'Jun', team: 82, league: 85 },
   ];
-  
-  // Sample data for upcoming events
-  const upcomingEvents = [
-    { id: 1, title: 'Team Training Session', type: 'training', date: new Date(new Date().setDate(new Date().getDate() + 1)), location: 'Main Training Ground' },
-    { id: 2, title: 'Match vs. Rival Team', type: 'game', date: new Date(new Date().setDate(new Date().getDate() + 3)), location: 'Home Stadium' },
-    { id: 3, title: 'Fitness Assessment', type: 'medical', date: new Date(new Date().setDate(new Date().getDate() + 5)), location: 'Sports Medicine Center' },
-    { id: 4, title: 'Recovery Session', type: 'training', date: new Date(new Date().setDate(new Date().getDate() + 7)), location: 'Recovery Center' },
+
+  const trainingData = [
+    { name: 'Week 1', conditioning: 40, strength: 65, technical: 30 },
+    { name: 'Week 2', conditioning: 45, strength: 70, technical: 40 },
+    { name: 'Week 3', conditioning: 60, strength: 72, technical: 45 },
+    { name: 'Week 4', conditioning: 55, strength: 75, technical: 55 },
   ];
-  
-  // Sample data for athletes at risk
-  const athletesAtRisk = [
-    { name: 'Emma Wilson', risk: 'High fatigue levels', urgency: 'high' },
-    { name: 'James Parker', risk: 'Recent injury concern', urgency: 'medium' },
+
+  const healthData = [
+    { name: 'Week 1', fatigue: 68, readiness: 78, issues: 2 },
+    { name: 'Week 2', fatigue: 72, readiness: 73, issues: 3 },
+    { name: 'Week 3', fatigue: 65, readiness: 80, issues: 1 },
+    { name: 'Week 4', fatigue: 60, readiness: 85, issues: 0 },
   ];
 
   return (
     <Layout>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div>
-            <Button onClick={() => navigate('/athletes')}>
-              <Users className="mr-2 h-4 w-4" />
-              Manage Athletes
-            </Button>
-          </div>
         </div>
-
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Athletes"
-            value={athletes?.length || 0}
-            icon={<Users className="h-4 w-4" />}
-            trend={{ value: 2, isPositive: true }}
-            description="vs. last month"
-          />
-          <StatCard
-            title="Upcoming Events"
-            value={upcomingEvents.length}
-            icon={<Calendar className="h-4 w-4" />}
-            description="in next 7 days"
-          />
-          <StatCard
-            title="Avg Performance"
-            value="78%"
-            icon={<Activity className="h-4 w-4" />}
-            trend={{ value: 3, isPositive: true }}
-            description="team average"
-          />
-          <StatCard
-            title="Injury Rate"
-            value="12%"
-            icon={<Heart className="h-4 w-4" />}
-            trend={{ value: 4, isPositive: false }}
-            description="needs attention"
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Charts and Analytics */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Performance Trends Card */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Team Performance Trends</CardTitle>
-                    <CardDescription>6-week comparison of key metrics</CardDescription>
-                  </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Average performance metrics for all active athletes.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <PerformanceChart
-                  title=""
-                  data={teamPerformanceData}
-                  type="line"
-                  dataKeys={[
-                    { key: 'strength', color: '#2563eb', name: 'Strength' },
-                    { key: 'speed', color: '#16a34a', name: 'Speed' },
-                    { key: 'endurance', color: '#d97706', name: 'Endurance' }
-                  ]}
-                  height={300}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Tabs for Events and Alerts */}
-            <Tabs defaultValue="upcoming">
-              <TabsList>
-                <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
-                <TabsTrigger value="risks">Athlete Risks</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="upcoming">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Next 7 Days</CardTitle>
-                    <CardDescription>Scheduled events and activities</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {upcomingEvents.map(event => (
-                        <div key={event.id} className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              event.type === 'game' ? 'bg-blue-100 text-blue-600' : 
-                              event.type === 'training' ? 'bg-green-100 text-green-600' : 
-                              'bg-amber-100 text-amber-600'
-                            }`}>
-                              {event.type === 'game' ? '🏆' : event.type === 'training' ? '🏋️' : '🩺'}
-                            </div>
-                            <div>
-                              <p className="font-medium">{event.title}</p>
-                              <div className="flex items-center text-xs text-muted-foreground gap-2">
-                                <span>{event.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                                <span>•</span>
-                                <span>{event.location}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <Badge variant={
-                            event.type === 'game' ? 'default' : 
-                            event.type === 'training' ? 'outline' : 
-                            'secondary'
-                          } className="capitalize">
-                            {event.type}
-                          </Badge>
-                        </div>
-                      ))}
+        
+        <Tabs defaultValue="overview">
+          <TabsList className="mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="health">Health</TabsTrigger>
+            <TabsTrigger value="training">Training</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Athletes
+                  </CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{athletes.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    +1 since last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Avg Performance
+                  </CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">82/100</div>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-green-500 inline-flex items-center">
+                      <ArrowUp className="h-3 w-3 mr-1" />
+                      2.5%
+                    </span>{" "}
+                    vs. last month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Upcoming Events
+                  </CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">6</div>
+                  <p className="text-xs text-muted-foreground">
+                    Next event in 3 days
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Injury Reports
+                  </CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">2</div>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-red-500 inline-flex items-center">
+                      <ArrowUp className="h-3 w-3 mr-1" />
+                      1 new
+                    </span>{" "}
+                    since last week
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+              <Card className="col-span-2">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base font-medium">Performance Overview</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 mr-1"></div>
+                      Team
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <div className="h-2 w-2 rounded-full bg-green-500 mr-1"></div>
+                      League Avg
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <PerformanceChart
+                    title="Performance Metrics"
+                    data={performanceData}
+                    type="line"
+                    dataKeys={[
+                      { key: 'team', color: '#3b82f6', name: 'Your Team' },
+                      { key: 'league', color: '#22c55e', name: 'League Avg' }
+                    ]}
+                    height={300}
+                  />
+                </CardContent>
+              </Card>
               
-              <TabsContent value="risks">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
-                      Athletes Requiring Attention
-                    </CardTitle>
-                    <CardDescription>Health and performance risks</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {athletesAtRisk.length > 0 ? (
-                      <div className="space-y-4">
-                        {athletesAtRisk.map((athlete, idx) => (
-                          <div key={idx} className="flex items-center justify-between hover:bg-muted/50 p-3 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback>{athlete.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">{athlete.name}</p>
-                                <p className="text-xs text-muted-foreground">{athlete.risk}</p>
-                              </div>
-                            </div>
-                            <Badge variant={athlete.urgency === 'high' ? 'destructive' : 'secondary'}>
-                              {athlete.urgency === 'high' ? 'Urgent' : 'Monitor'}
-                            </Badge>
-                          </div>
-                        ))}
+              <Card className="row-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base font-medium">Top Athletes</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {topAthletes.map((athlete, index) => (
+                    <div key={athlete.id} className={index > 0 ? 'pt-3' : ''}>
+                      {index > 0 && <div className="border-t mb-3"></div>}
+                      <AthletePerformanceCard athlete={athlete} />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base font-medium">Training Load</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PerformanceChart
+                    title="Training Load"
+                    data={trainingData}
+                    type="bar"
+                    dataKeys={[
+                      { key: 'conditioning', color: '#06b6d4', name: 'Conditioning' },
+                      { key: 'strength', color: '#ec4899', name: 'Strength' },
+                      { key: 'technical', color: '#6366f1', name: 'Technical' }
+                    ]}
+                    height={240}
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base font-medium">Recent Achievements</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 text-blue-600 mr-3">
+                        <Medal className="h-5 w-5" />
                       </div>
-                    ) : (
-                      <div className="text-center py-6">
-                        <p className="text-muted-foreground">No athletes at risk currently</p>
+                      <div>
+                        <p className="text-sm font-medium">Tournament Runner-up</p>
+                        <p className="text-xs text-muted-foreground">Regional Championship 2023</p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Right Column: Athletes and Summary */}
-          <div className="space-y-6">
-            {/* AI Summary */}
-            <AISummaryCard />
-
-            {/* Top Athletes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Athletes</CardTitle>
-                <CardDescription>Best performers this month</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {isLoading ? (
-                  <div className="flex justify-center py-4">
-                    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-100 text-green-600 mr-3">
+                        <Target className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Personal Best</p>
+                        <p className="text-xs text-muted-foreground">100m Sprint - Michael Jordan</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-amber-100 text-amber-600 mr-3">
+                        <History className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Team Record</p>
+                        <p className="text-xs text-muted-foreground">Most wins in a season</p>
+                      </div>
+                    </div>
                   </div>
-                ) : athletes && athletes.length > 0 ? (
-                  athletes.slice(0, 3).map((athlete) => (
-                    <AthletePerformanceCard key={athlete.id} athlete={athlete} />
-                  ))
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No athletes found</p>
-                  </div>
-                )}
-              </CardContent>
-              <div className="px-6 pb-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate('/athletes')}
-                >
-                  View All Athletes
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </div>
+                </CardContent>
+              </Card>
+          
+              <Card className="col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-base font-medium">Health & Wellness</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PerformanceChart
+                    title="Health Metrics"
+                    data={healthData}
+                    type="mixed"
+                    dataKeys={[
+                      { key: 'fatigue', color: '#f97316', name: 'Fatigue', type: 'line' },
+                      { key: 'readiness', color: '#0ea5e9', name: 'Readiness', type: 'line' },
+                      { key: 'issues', color: '#ef4444', name: 'Issues', type: 'bar' }
+                    ]}
+                    height={240}
+                  />
+                </CardContent>
+              </Card>
+              
+              <AISummaryCard 
+                title="AI Performance Insights" 
+                insights={[
+                  <span>Team strength has improved by <strong>7%</strong> over the last 4 weeks. Continue the current strength training program.</span>,
+                  <span>Consider increasing <strong>recovery periods</strong> for sprint athletes showing signs of fatigue.</span>,
+                  <span>Recommend <strong>technique refinement</strong> for jumping events based on recent performance data.</span>
+                ]}
+              />
+              
+              <AISummaryCard 
+                title="AI Health Recommendations" 
+                insights={[
+                  <span>Sleep quality is <strong>below target</strong> for 3 athletes. Schedule consultation with sleep specialist.</span>,
+                  <span>Nutritional intake shows <strong>inadequate protein</strong> consumption post-training for team sprinters.</span>,
+                  <span>Hydration levels are <strong>optimal</strong> across the team. Continue current hydration protocol.</span>
+                ]}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="performance">
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Performance metrics and detailed analysis will be displayed here.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="health">
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Health Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Health metrics and wellness indicators will be displayed here.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="training">
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Training Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Training schedules and progress tracking will be displayed here.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
+  );
+}
+
+function Users(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
   );
 }

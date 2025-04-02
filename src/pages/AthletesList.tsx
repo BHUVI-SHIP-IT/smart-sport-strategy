@@ -27,8 +27,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from "@/integrations/supabase/client";
-import { databaseService, Athlete } from '@/services/databaseService';
+import { databaseService } from '@/services/databaseService';
 import { toast } from 'sonner';
+import { normalizeAthlete, ExtendedAthlete } from '@/types/athlete';
 
 // Form schema for adding new athletes
 const athleteFormSchema = z.object({
@@ -53,7 +54,7 @@ export default function AthletesList() {
   const navigate = useNavigate();
 
   // Fetch athletes from Supabase
-  const { data: athletes, isLoading, error, refetch } = useQuery({
+  const { data: athletesData, isLoading, error, refetch } = useQuery({
     queryKey: ['athletes'],
     queryFn: async () => {
       // Try to fetch from Supabase first
@@ -71,6 +72,12 @@ export default function AthletesList() {
       return supabaseAthletes;
     }
   });
+  
+  // Normalize athlete data
+  const athletes = React.useMemo(() => {
+    if (!athletesData) return [];
+    return athletesData.map(athlete => normalizeAthlete(athlete));
+  }, [athletesData]);
   
   // Setup form
   const form = useForm<AthleteFormValues>({
@@ -481,16 +488,16 @@ export default function AthletesList() {
                                 <div>
                                   <p className="font-medium">{athlete.name}</p>
                                   <p className="text-xs text-muted-foreground md:hidden">
-                                    {athlete.position} · {athlete.sport}
+                                    {athlete.position || 'N/A'} · {athlete.sport}
                                   </p>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell>{athlete.position}</TableCell>
-                            <TableCell className="hidden md:table-cell">{athlete.team}</TableCell>
+                            <TableCell>{athlete.position || 'N/A'}</TableCell>
+                            <TableCell className="hidden md:table-cell">{athlete.team || 'N/A'}</TableCell>
                             <TableCell className="hidden md:table-cell">
                               <Badge variant={athlete.status === 'active' ? "outline" : athlete.status === 'injured' ? "destructive" : "secondary"} className="capitalize">
-                                {athlete.status}
+                                {athlete.status || 'active'}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">{athlete.sport}</TableCell>
@@ -566,11 +573,11 @@ export default function AthletesList() {
                             </Avatar>
                             <div>
                               <p className="text-sm font-medium">{athlete.name}</p>
-                              <p className="text-xs text-muted-foreground">{athlete.position}</p>
+                              <p className="text-xs text-muted-foreground">{athlete.position || 'N/A'}</p>
                             </div>
                           </div>
                           <Badge variant={athlete.status === 'active' ? "outline" : "destructive"} className="capitalize">
-                            {athlete.status}
+                            {athlete.status || 'active'}
                           </Badge>
                         </div>
                       ))}
@@ -643,7 +650,7 @@ export default function AthletesList() {
                           </TableCell>
                           <TableCell>
                             <Badge variant={athlete.status === 'active' ? "outline" : athlete.status === 'injured' ? "destructive" : "secondary"} className="capitalize">
-                              {athlete.status}
+                              {athlete.status || 'active'}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -672,7 +679,7 @@ export default function AthletesList() {
                         <div key={`${athlete.id}-${idx}`} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarFallback>{sponsorship.company.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{sponsorship.company?.charAt(0) || 'S'}</AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="font-medium">{sponsorship.company}</p>
