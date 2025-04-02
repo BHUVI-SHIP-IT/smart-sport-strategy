@@ -21,16 +21,30 @@ import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { ThemeProvider } from "next-themes";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 function App() {
+  // Check local storage for theme when app loads
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('vite-ui-theme');
+    const htmlElement = document.documentElement;
+    
+    if (savedTheme) {
+      htmlElement.classList.toggle('dark', savedTheme === 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      htmlElement.classList.add('dark');
+      localStorage.setItem('vite-ui-theme', 'dark');
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AIProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="App">
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <AuthProvider>
+          <AIProvider>
+            <div className="min-h-screen bg-background text-foreground transition-colors">
               <TooltipProvider>
                 <Routes>
                   {/* Auth Routes */}
@@ -96,9 +110,9 @@ function App() {
                 <Toaster />
               </TooltipProvider>
             </div>
-          </ThemeProvider>
-        </AIProvider>
-      </AuthProvider>
+          </AIProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

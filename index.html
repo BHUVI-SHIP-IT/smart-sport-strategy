@@ -12,13 +12,19 @@
       (function() {
         try {
           const savedTheme = localStorage.getItem('vite-ui-theme');
-          if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          // Apply theme immediately to prevent flickering
+          if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
             document.documentElement.classList.add('dark');
-          } else {
+          } else if (savedTheme === 'light') {
             document.documentElement.classList.remove('dark');
+          } else if (prefersDark) {
+            // If no saved preference but system prefers dark
+            document.documentElement.classList.add('dark');
           }
         } catch (e) {
-          console.error(e);
+          console.error("Error applying theme:", e);
         }
       })();
     </script>
