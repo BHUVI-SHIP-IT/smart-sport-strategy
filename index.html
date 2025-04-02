@@ -3,25 +3,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SportStrategy - AI-Powered Performance Tracking</title>
-    <meta name="description" content="AI-powered performance tracking and management platform for elite athletes" />
-    <meta name="author" content="SportStrategy" />
-
-    <meta property="og:title" content="SportStrategy - AI-Powered Performance Tracking" />
-    <meta property="og:description" content="AI-powered performance tracking and management platform for elite athletes" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@sport_strategy" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <title>AthletePro - Sports Management Platform</title>
+    <meta name="description" content="AthletePro - The ultimate platform for athlete management and performance tracking">
+    <script>
+      // This script checks if dark mode is saved in localStorage or if system prefers dark mode
+      (function() {
+        try {
+          const savedTheme = localStorage.getItem('vite-ui-theme');
+          if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      })();
+    </script>
   </head>
-
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

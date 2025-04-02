@@ -29,70 +29,72 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AIProvider>
-          <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div className="App">
-              <Toaster />
-              <Routes>
-                {/* Auth Routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<SignUp />} />
-                
-                {/* Protected Routes */}
-                <Route path="/" element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } />
-                <Route path="/athletes" element={
-                  <ProtectedRoute>
-                    <Athletes />
-                  </ProtectedRoute>
-                } />
-                <Route path="/performance" element={
-                  <ProtectedRoute>
-                    <Performance />
-                  </ProtectedRoute>
-                } />
-                <Route path="/health" element={
-                  <ProtectedRoute>
-                    <Health />
-                  </ProtectedRoute>
-                } />
-                <Route path="/calendar" element={
-                  <ProtectedRoute>
-                    <Calendar />
-                  </ProtectedRoute>
-                } />
-                <Route path="/training" element={
-                  <ProtectedRoute>
-                    <Training />
-                  </ProtectedRoute>
-                } />
-                <Route path="/career" element={
-                  <ProtectedRoute>
-                    <Career />
-                  </ProtectedRoute>
-                } />
-                <Route path="/achievements" element={
-                  <ProtectedRoute>
-                    <Achievements />
-                  </ProtectedRoute>
-                } />
-                <Route path="/chat" element={
-                  <ProtectedRoute>
-                    <Chat />
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } />
-                
-                {/* 404 Route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Sonner />
+              <TooltipProvider>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  
+                  {/* Protected Routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/athletes" element={
+                    <ProtectedRoute>
+                      <Athletes />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/performance" element={
+                    <ProtectedRoute>
+                      <Performance />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/health" element={
+                    <ProtectedRoute>
+                      <Health />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/calendar" element={
+                    <ProtectedRoute>
+                      <Calendar />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/training" element={
+                    <ProtectedRoute>
+                      <Training />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/career" element={
+                    <ProtectedRoute>
+                      <Career />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/achievements" element={
+                    <ProtectedRoute>
+                      <Achievements />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/chat" element={
+                    <ProtectedRoute>
+                      <Chat />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/settings" element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* 404 Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Sonner />
+                <Toaster />
+              </TooltipProvider>
             </div>
           </ThemeProvider>
         </AIProvider>
