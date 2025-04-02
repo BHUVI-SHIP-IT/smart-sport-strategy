@@ -10,16 +10,11 @@ import {
 } from "../chart"
 
 export interface ChartProps {
-  // Ensure any places where ReactNode is used but ReactElement is required are updated
-  // For example, change types like:
-  // tooltip?: React.ReactNode;
-  // to:
-  // tooltip?: React.ReactElement;
-
   data: any[]
   index: string
   categories: string[]
   colors: string[]
+  yAxisWidth?: number
   showAnimation?: boolean
   showLegend?: boolean
   valueFormatter?: (value: number) => string
