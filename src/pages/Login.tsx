@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from '@/context/AuthContext';
 
 // Form validation schema
 const formSchema = z.object({
@@ -19,6 +20,11 @@ const formSchema = z.object({
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  
+  // Get the redirect path from location state or default to '/'
+  const from = location.state?.from?.pathname || '/';
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,16 +43,16 @@ const Login = () => {
       
       // Simulating a successful login
       setTimeout(() => {
-        // Store authentication state
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({ email: values.email }));
+        // Use the login function from AuthContext instead of directly setting localStorage
+        login({ email: values.email });
         
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
         
-        navigate('/');
+        // Navigate to the page user was trying to access, or to home
+        navigate(from, { replace: true });
       }, 1000);
     } catch (error) {
       console.error(error);
