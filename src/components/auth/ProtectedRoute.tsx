@@ -23,8 +23,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
-    // Pass the current location in state so we can redirect back after login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Only show the toast and redirect if the user is not on the login page already
+    if (location.pathname !== "/login") {
+      // Pass the current location in state so we can redirect back after login
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
   }
 
   return <>{children}</>;

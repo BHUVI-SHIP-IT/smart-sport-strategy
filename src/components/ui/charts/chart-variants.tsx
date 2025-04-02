@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { 
@@ -10,6 +9,22 @@ import {
   type ChartConfig 
 } from "../chart"
 
+export interface ChartProps {
+  // Ensure any places where ReactNode is used but ReactElement is required are updated
+  // For example, change types like:
+  // tooltip?: React.ReactNode;
+  // to:
+  // tooltip?: React.ReactElement;
+
+  data: any[]
+  index: string
+  categories: string[]
+  colors: string[]
+  showAnimation?: boolean
+  showLegend?: boolean
+  valueFormatter?: (value: number) => string
+}
+
 export const AreaChart = ({
   data,
   index,
@@ -19,15 +34,7 @@ export const AreaChart = ({
   showLegend = true,
   valueFormatter,
   ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & React.HTMLAttributes<HTMLDivElement>) => {
+}: ChartProps) => {
   const chartConfig: ChartConfig = React.useMemo(() => {
     return categories.reduce((acc, category, i) => {
       return {
@@ -91,15 +98,7 @@ export const BarChart = ({
   showLegend = true,
   valueFormatter,
   ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & React.HTMLAttributes<HTMLDivElement>) => {
+}: ChartProps) => {
   const chartConfig: ChartConfig = React.useMemo(() => {
     return categories.reduce((acc, category, i) => {
       return {
@@ -162,16 +161,7 @@ export const LineChart = ({
   showLegend = true,
   valueFormatter,
   ...props
-}: {
-  data: any[]
-  index: string
-  categories: string[]
-  colors: string[]
-  yAxisWidth?: number
-  showAnimation?: boolean
-  showLegend?: boolean
-  valueFormatter?: (value: number) => string
-} & React.HTMLAttributes<HTMLDivElement>) => {
+}: ChartProps) => {
   const chartConfig: ChartConfig = React.useMemo(() => {
     return categories.reduce((acc, category, i) => {
       return {
