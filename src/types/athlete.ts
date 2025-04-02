@@ -43,6 +43,7 @@ export interface ExtendedAthlete extends SupabaseAthlete {
     historicalData?: {
       [key: string]: number[];
     };
+    [key: string]: any;
   };
   career?: {
     startDate: string;
@@ -63,11 +64,11 @@ export function normalizeAthlete(athlete: MockAthlete | SupabaseAthlete | any): 
     return {
       ...athlete,
       profileImage: athlete.image_url,
-      status: 'active',
-      position: '',
-      team: '',
-      age: 0,
-      performanceStats: {
+      status: athlete.status || 'active',
+      position: athlete.position || '',
+      team: athlete.team || '',
+      age: athlete.age || 0,
+      performanceStats: athlete.performanceStats || {
         strengthScore: 75,
         speedScore: 75,
         enduranceScore: 75,
@@ -77,10 +78,10 @@ export function normalizeAthlete(athlete: MockAthlete | SupabaseAthlete | any): 
         mentalScore: 75,
         overallScore: 75,
       },
-      contactInfo: {
+      contactInfo: athlete.contactInfo || {
         email: '',
       },
-      career: {
+      career: athlete.career || {
         startDate: new Date().toISOString(),
       }
     };

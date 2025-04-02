@@ -6,24 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ArrowUpRight, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { ExtendedAthlete } from '@/types/athlete';
 
 interface AthletePerformanceCardProps {
-  athlete: {
-    id: string;
-    name: string;
-    sport?: string;
-    position?: string;
-    status?: string;
-    profileImage?: string;
-    performanceStats?: {
-      strengthScore?: number;
-      speedScore?: number;
-      enduranceScore?: number;
-      overallScore?: number;
-      [key: string]: number | undefined;
-    };
-  };
+  athlete: ExtendedAthlete;
 }
 
 export function AthletePerformanceCard({ athlete }: AthletePerformanceCardProps) {
@@ -45,7 +32,7 @@ export function AthletePerformanceCard({ athlete }: AthletePerformanceCardProps)
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={athlete.profileImage} alt={athlete.name} />
+              <AvatarImage src={athlete.profileImage || athlete.image_url} alt={athlete.name} />
               <AvatarFallback>{athlete.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
@@ -58,7 +45,7 @@ export function AthletePerformanceCard({ athlete }: AthletePerformanceCardProps)
             </div>
           </div>
           <Badge variant={athlete.status === 'active' ? "outline" : athlete.status === 'injured' ? "destructive" : "secondary"} className="capitalize">
-            {athlete.status}
+            {athlete.status || 'active'}
           </Badge>
         </div>
       </CardHeader>

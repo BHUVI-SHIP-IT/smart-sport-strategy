@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons';
+import { HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface AISummaryCardProps {
@@ -17,7 +17,7 @@ export function AISummaryCard({ title, insights }: AISummaryCardProps) {
         <CardTitle className="text-sm font-medium">
           {title}
         </CardTitle>
-        <QuestionMarkCircledIcon className="h-4 w-4 text-muted-foreground" />
+        <HelpCircle className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent className="px-0">
         <div className="px-6 py-4 space-y-4">

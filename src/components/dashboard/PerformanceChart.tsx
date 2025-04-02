@@ -93,7 +93,7 @@ export function PerformanceChart({
             <YAxis tickLine={false} axisLine={false} />
             <Tooltip />
             <Legend />
-            {dataKeys.map((dk, index) => (
+            {dataKeys.map((dk) => (
               <Area
                 key={dk.key}
                 type="monotone"
