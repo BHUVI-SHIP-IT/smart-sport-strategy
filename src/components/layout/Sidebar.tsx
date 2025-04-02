@@ -1,8 +1,9 @@
+
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useMobile } from "@/hooks/useMobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   LayoutDashboard,
   Calendar,
@@ -48,7 +49,7 @@ function SideNavLink({ to, expanded, Icon, label, active }: SideNavLinkProps) {
 
 export function Sidebar() {
   const location = useLocation();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [expanded, setExpanded] = React.useState(true);
 
   React.useEffect(() => {
