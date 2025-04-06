@@ -1,13 +1,26 @@
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { 
-  ChartContainer, 
+  ChartContainer as BaseChartContainer, 
   ChartTooltip, 
   ChartTooltipContent, 
   ChartLegend, 
   ChartLegendContent,
   type ChartConfig 
 } from "../chart"
+
+// Create a wrapper component that accepts the config prop
+const ChartContainer: React.FC<React.PropsWithChildren<{
+  config: ChartConfig;
+  className?: string;
+}>> = ({ children, config, className }) => {
+  return (
+    <BaseChartContainer className={className}>
+      {children}
+    </BaseChartContainer>
+  );
+};
 
 export interface ChartProps {
   data: any[]

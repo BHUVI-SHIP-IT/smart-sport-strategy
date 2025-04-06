@@ -1,6 +1,5 @@
-
 import * as React from "react"
-import { Line, Bar, Area, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, BarChart, AreaChart, PieChart, Cell, Payload } from "recharts"
+import { Line, Bar, Area, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, BarChart, AreaChart, PieChart, Cell } from "recharts"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -14,6 +13,13 @@ export type ChartConfig = {
     | { color?: string; theme?: never }
     | { color?: never; theme?: string }
   )
+}
+
+// Define a custom payload type instead of importing it
+type CustomPayload = {
+  name: string | number
+  value: string | number
+  dataKey: string
 }
 
 // Extending the recharts Payload type with our requirements
@@ -470,7 +476,7 @@ export function PieChartComponent({
 }
 
 // Export additional components needed by chart-variants.tsx
-export const ChartContainer = Charts;
+export const ChartContainer: React.FC<React.PropsWithChildren<{ className?: string }>> = Charts;
 export const ChartTooltip = Tooltip;
 export const ChartTooltipContent = CustomTooltip;
 export const ChartLegend = Legend;
