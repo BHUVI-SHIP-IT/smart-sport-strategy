@@ -1,12 +1,11 @@
 
 import * as React from "react"
-import { Line, Bar, Area, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, BarChart, AreaChart, PieChart, Cell } from "recharts"
+import { Line, Bar, Area, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, BarChart, AreaChart, PieChart, Cell, Payload } from "recharts"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export type ChartProps = React.ComponentPropsWithoutRef<typeof ResponsiveContainer>
 
-// Fix the ChartConfig type to resolve the TypeScript error
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -15,6 +14,13 @@ export type ChartConfig = {
     | { color?: string; theme?: never }
     | { color?: never; theme?: string }
   )
+}
+
+// Extending the recharts Payload type with our requirements
+type CustomPayload = {
+  name: string | number
+  value: string | number
+  dataKey: string
 }
 
 function getLineChartStyle(config: ChartConfig, key: string) {
@@ -74,12 +80,8 @@ export function Charts({ className, children }: ChartsProps) {
 
 interface CustomTooltipProps {
   active?: boolean
-  payload?: Array<{
-    name: string
-    value: string | number
-    dataKey: string
-  }>
-  label?: string
+  payload?: Array<any> // Use a more flexible type here
+  label?: string | number
   config: ChartConfig
   className?: string
 }
@@ -466,3 +468,25 @@ export function PieChartComponent({
     </Charts>
   )
 }
+
+// Export additional components needed by chart-variants.tsx
+export const ChartContainer = Charts;
+export const ChartTooltip = Tooltip;
+export const ChartTooltipContent = CustomTooltip;
+export const ChartLegend = Legend;
+export const ChartLegendContent = ({ payload }: { payload?: any[] }) => {
+  if (!payload?.length) return null;
+  
+  return (
+    <div className="grid w-full grid-flow-col justify-end gap-4">
+      {payload.map((item, index) => (
+        <div className="grid grid-flow-col items-center gap-2" key={index}>
+          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+          <div className="text-xs capitalize text-muted-foreground">
+            {item.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
