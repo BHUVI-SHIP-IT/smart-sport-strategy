@@ -10,18 +10,20 @@ import {
   type ChartConfig 
 } from "../chart"
 
-interface ChartContainerProps {
+interface CustomChartContainerProps {
   config: ChartConfig;
+  children: React.ReactElement;
   className?: string;
-  children: React.ReactNode;
 }
 
 // Create a wrapper component that accepts the config prop
-const CustomChartContainer = ({ children, config, className }: ChartContainerProps) => {
+const CustomChartContainer = ({ children, config, className }: CustomChartContainerProps) => {
   return (
-    <ChartContainer className={className}>
-      {children}
-    </ChartContainer>
+    <div className={className || "w-full h-full"}>
+      <ChartContainer>
+        {children}
+      </ChartContainer>
+    </div>
   );
 };
 

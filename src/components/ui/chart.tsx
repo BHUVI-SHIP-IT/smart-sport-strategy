@@ -42,7 +42,7 @@ interface ChartLegendProps {
 }
 
 interface ChartsProps {
-  children: React.ReactNode
+  children: React.ReactElement
   yAxisWidth?: number
 }
 
