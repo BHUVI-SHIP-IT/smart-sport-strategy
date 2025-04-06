@@ -2,7 +2,7 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { 
-  ChartContainer as BaseChartContainer, 
+  ChartContainer, 
   ChartTooltip, 
   ChartTooltipContent, 
   ChartLegend, 
@@ -10,15 +10,18 @@ import {
   type ChartConfig 
 } from "../chart"
 
-// Create a wrapper component that accepts the config prop
-const ChartContainer: React.FC<React.PropsWithChildren<{
+interface ChartContainerProps {
   config: ChartConfig;
   className?: string;
-}>> = ({ children, config, className }) => {
+  children: React.ReactNode;
+}
+
+// Create a wrapper component that accepts the config prop
+const CustomChartContainer = ({ children, config, className }: ChartContainerProps) => {
   return (
-    <BaseChartContainer className={className}>
+    <ChartContainer className={className}>
       {children}
-    </BaseChartContainer>
+    </ChartContainer>
   );
 };
 
@@ -56,7 +59,7 @@ export const AreaChart = ({
   }, [categories, colors])
 
   return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
+    <CustomChartContainer config={chartConfig} className="w-full h-full" {...props}>
       {React.createElement(
         RechartsPrimitive.AreaChart as any,
         { data },
@@ -74,11 +77,11 @@ export const AreaChart = ({
           />
           {showLegend && (
             <ChartLegend
-              content={(props: any) => <ChartLegendContent {...props} />}
+              content={(props: any) => <ChartLegendContent {...props} config={chartConfig} />}
             />
           )}
           <ChartTooltip
-            content={(props: any) => <ChartTooltipContent {...props} />}
+            content={(props: any) => <ChartTooltipContent {...props} config={chartConfig} />}
           />
           {categories.map((category, i) => (
             <RechartsPrimitive.Area
@@ -93,7 +96,7 @@ export const AreaChart = ({
           ))}
         </>
       )}
-    </ChartContainer>
+    </CustomChartContainer>
   )
 }
 
@@ -120,7 +123,7 @@ export const BarChart = ({
   }, [categories, colors])
 
   return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
+    <CustomChartContainer config={chartConfig} className="w-full h-full" {...props}>
       {React.createElement(
         RechartsPrimitive.BarChart as any,
         { data },
@@ -138,11 +141,11 @@ export const BarChart = ({
           />
           {showLegend && (
             <ChartLegend
-              content={(props: any) => <ChartLegendContent {...props} />}
+              content={(props: any) => <ChartLegendContent {...props} config={chartConfig} />}
             />
           )}
           <ChartTooltip
-            content={(props: any) => <ChartTooltipContent {...props} />}
+            content={(props: any) => <ChartTooltipContent {...props} config={chartConfig} />}
           />
           {categories.map((category, i) => (
             <RechartsPrimitive.Bar
@@ -155,7 +158,7 @@ export const BarChart = ({
           ))}
         </>
       )}
-    </ChartContainer>
+    </CustomChartContainer>
   )
 }
 
@@ -183,7 +186,7 @@ export const LineChart = ({
   }, [categories, colors])
 
   return (
-    <ChartContainer config={chartConfig} className="w-full h-full" {...props}>
+    <CustomChartContainer config={chartConfig} className="w-full h-full" {...props}>
       {React.createElement(
         RechartsPrimitive.LineChart as any,
         { data },
@@ -202,11 +205,11 @@ export const LineChart = ({
           />
           {showLegend && (
             <ChartLegend
-              content={(props: any) => <ChartLegendContent {...props} />}
+              content={(props: any) => <ChartLegendContent {...props} config={chartConfig} />}
             />
           )}
           <ChartTooltip
-            content={(props: any) => <ChartTooltipContent {...props} />}
+            content={(props: any) => <ChartTooltipContent {...props} config={chartConfig} />}
           />
           {categories.map((category, i) => (
             <RechartsPrimitive.Line
@@ -222,6 +225,6 @@ export const LineChart = ({
           ))}
         </>
       )}
-    </ChartContainer>
+    </CustomChartContainer>
   )
 }
