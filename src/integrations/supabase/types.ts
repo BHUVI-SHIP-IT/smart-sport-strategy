@@ -12,39 +12,60 @@ export type Database = {
       athletes: {
         Row: {
           achievements: string | null
+          age: number | null
           bio: string | null
           created_at: string
+          height: number | null
           id: string
           image_url: string | null
           name: string
+          performance_stats: Json | null
+          position: string | null
           social_media: Json | null
           sport: string
+          status: string | null
+          team: string | null
           updated_at: string
           user_id: string
+          weight: number | null
         }
         Insert: {
           achievements?: string | null
+          age?: number | null
           bio?: string | null
           created_at?: string
+          height?: number | null
           id?: string
           image_url?: string | null
           name: string
+          performance_stats?: Json | null
+          position?: string | null
           social_media?: Json | null
           sport: string
+          status?: string | null
+          team?: string | null
           updated_at?: string
           user_id: string
+          weight?: number | null
         }
         Update: {
           achievements?: string | null
+          age?: number | null
           bio?: string | null
           created_at?: string
+          height?: number | null
           id?: string
           image_url?: string | null
           name?: string
+          performance_stats?: Json | null
+          position?: string | null
           social_media?: Json | null
           sport?: string
+          status?: string | null
+          team?: string | null
           updated_at?: string
           user_id?: string
+          weight?: number | null
         }
         Relationships: []
       }

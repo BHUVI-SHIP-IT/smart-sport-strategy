@@ -8,6 +8,7 @@ import { AIProvider } from "./context/AIContext";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Athletes from "./pages/Athletes";
+import AddAthlete from "./pages/AddAthlete";
 import Performance from "./pages/Performance";
 import Health from "./pages/Health";
 import Calendar from "./pages/Calendar";
@@ -60,6 +61,11 @@ function App() {
                   <Route path="/athletes" element={
                     <ProtectedRoute>
                       <Athletes />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/athletes/add" element={
+                    <ProtectedRoute>
+                      <AddAthlete />
                     </ProtectedRoute>
                   } />
                   <Route path="/performance" element={
