@@ -26,7 +26,7 @@ import { useEffect } from "react";
 const queryClient = new QueryClient();
 
 function App() {
-  // Check local storage for theme when app loads
+  // Initialize theme based on local storage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('vite-ui-theme');
     const htmlElement = document.documentElement;
