@@ -22,13 +22,6 @@ type CustomPayload = {
   dataKey: string
 }
 
-// Extending the recharts Payload type with our requirements
-type CustomPayload = {
-  name: string | number
-  value: string | number
-  dataKey: string
-}
-
 function getLineChartStyle(config: ChartConfig, key: string) {
   if (config[key]?.theme === "solid") {
     return {
