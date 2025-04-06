@@ -9,7 +9,7 @@ const THEMES = { light: "", dark: ".dark" } as const
 
 export type ChartConfig = {
   [k in string]: {
-    label?: React.ReactElement | string | number
+    label?: React.ReactNode // Changed from React.ReactElement | string | number to ReactNode
     icon?: React.ComponentType
   } & (
     | { color?: string; theme?: never }
