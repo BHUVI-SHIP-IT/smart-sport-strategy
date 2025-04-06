@@ -1,69 +1,53 @@
-# Welcome to your Lovable project
+# 🏅 Smart Sport Strategy
 
-## Project info
+**Revolutionizing Athlete Management in the Sports Industry**  
+A modern web platform to streamline performance tracking, strategic coaching, medical supervision, and talent scouting — all under one integrated solution.
 
-**URL**: https://lovable.dev/projects/725edf5a-b2a1-43f1-9cb4-70591f64e4f3
+---
 
-## How can I edit this code?
+## 📌 Overview
 
-There are several ways of editing your application.
+Smart Sport Strategy is a comprehensive athlete management system that empowers:
+- 🧍 Athletes to log and track performance,
+- 🧑‍🏫 Coaches to design training strategies,
+- 👨‍⚕️ Medical staff to monitor health reports,
+- 🔍 Scouts to identify emerging talent.
 
-**Use Lovable**
+Built with modern web technologies and Supabase as the backend, this platform aims to transform how sports institutions manage athlete data.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/725edf5a-b2a1-43f1-9cb4-70591f64e4f3) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Features
 
-**Use your preferred IDE**
+- ✍️ Role-based login (Athlete, Coach, Medical, Scout)
+- 📈 Performance logging & progress tracking
+- 🧠 Strategy assignment and analytics for coaches
+- 🩺 Health and injury log by medical professionals
+- 🔎 Talent analysis dashboard for scouts
+- 📊 Visual reports powered by real-time data
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏗️ Architecture
 
-Follow these steps:
+Frontend: Vite + React  
+Backend: Supabase (Auth, Database, Storage)  
+Hosting: Vercel  
+Design: Figma
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Check the architecture diagram in `/assets/architecture.png`.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🔧 Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+# Clone the repo
+git clone https://github.com/your-username/smart-sport-strategy.git
+cd smart-sport-strategy
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/725edf5a-b2a1-43f1-9cb4-70591f64e4f3) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
